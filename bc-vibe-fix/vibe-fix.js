@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Game Fixes (formerly Vibe Fix) for Bondage Club
 // Stopgaps for bugs in the game itself, each a small ModSDK hook that lets the game's own code do the work and stops
 // doing anything once the game is fixed. (The folder, file, window.VibeFix and the vf-v tags keep the old name, so
@@ -22,7 +22,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_VibeFix", fullName: "Nightstand: Game Fixes", version: "0.2.2", repository: "https://github.com/BountyHunter9000/bc-toolkit/tree/main/bc-vibe-fix" };
+	const MOD_INFO = { name: "NS_VibeFix", fullName: "Nightstand: Game Fixes", version: "0.2.2", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-vibe-fix" };
 	const TAG = "[GameFixes]";
 
 	// Re-running the script (dev reload) replaces the previous instance

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Nightstand (beta) without Tampermonkey: the same thing nightstand-beta.user.js does (test versions switched on), for the browser console, a bookmark, or an
 // add-on manager such as FUSAM. It turns the loader on and adds the dock; the dock then loads the add-ons you have
 // switched on (⚙ → Add-ons). Running it twice, or alongside the Tampermonkey script, does nothing more.
@@ -9,11 +9,11 @@
 (() => {
 	"use strict";
 	const BETA = true; // loader.js: false. Test versions switched on, and the dock's newest test version
-	const FALLBACK = "tk-v1.3.3";
+	const FALLBACK = "tk-v1.3.4";
 	// The repository: this name to start with, then whatever toolkit.json names ("repo"), so a renamed repository only
 	// needs a new list (GitHub redirects the old name's raw files). Only the name comes from the list.
 	const OWNER = "BountyHunter9000";
-	const REPO = "bc-toolkit";
+	const REPO = "nightstand";
 	const NAME = /^[A-Za-z0-9._-]{1,100}$/;
 	const LISTS = [`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/toolkit.json`, `https://cdn.jsdelivr.net/gh/${OWNER}/${REPO}@main/toolkit.json`];
 	const dockUrl = (repo, tag) => `https://cdn.jsdelivr.net/gh/${OWNER}/${repo}@${tag}/bc-dock/bc-dock.js`;

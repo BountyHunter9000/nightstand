@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Afterglow for Bondage Club
 // Keeps count of your orgasms, ruined orgasms, resisted orgasms and denials, the time since your last orgasm, and
 // your records: the longest you've gone without one, and the most denials (ruins, resists) between two.
@@ -11,7 +11,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_Afterglow", fullName: "Nightstand: Afterglow", version: "0.8.4", repository: "https://github.com/BountyHunter9000/bc-toolkit/tree/main/bc-afterglow" };
+	const MOD_INFO = { name: "NS_Afterglow", fullName: "Nightstand: Afterglow", version: "0.8.4", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-afterglow" };
 	const TAG = "[Afterglow]";
 	const SETTINGS_KEY = "Afterglow";
 	const LOG_MAX = 1000;

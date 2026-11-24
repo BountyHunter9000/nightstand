@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Quick Actions for Bondage Club
 // A small floating bar in chat rooms: pick a target, then fire favourite or recent activities
 // with one click (or Alt+1..9) instead of going through the character dialog each time.
@@ -8,7 +8,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_QuickActions", fullName: "Nightstand: Quick Actions", version: "0.5.6", repository: "https://github.com/BountyHunter9000/bc-toolkit/tree/main/bc-quick-actions" };
+	const MOD_INFO = { name: "NS_QuickActions", fullName: "Nightstand: Quick Actions", version: "0.5.6", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-quick-actions" };
 	const TAG = "[QuickActions]";
 	const SETTINGS_KEY = "QuickActions";
 	const MAX_RECENT = 10;

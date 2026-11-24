@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Types shared by the Nightstand add-ons: the dock's API and what each add-on puts on window. Only used when type
 // checking (tools/check.mjs checks the add-ons against the game's own declarations); the game never loads it.
 

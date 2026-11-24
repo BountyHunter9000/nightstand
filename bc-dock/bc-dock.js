@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // BC Dock: a rail of tabs on the screen edge for Little Black Book, Quick Actions and Vibe Link.
 // Clicking a tab slides its panel out beside the rail (one at a time), or runs the add-on's own
 // action (Little Black Book opens its big window). The Nightstand script (nightstand.user.js) @requires this file,
@@ -9,7 +9,7 @@
 "use strict";
 
 (() => {
-	const VERSION = 21; // 3: add-on versions in the header, tooltips and ⚙; 4: per-panel minWidth/maxWidth; 5: steps aside for game popups; 6: slimmer ⚙ panel; 7: themes; 8: Royal (blue/gold); 9: says when the dev folder moved; 10: developer tools only when a loader turns them on; 11: Little Black Book; 12: Afterglow in the developer reload; 13: character name in the browser tab, title markers for add-ons, Quiet, Held Remote and Vibe Fix in the developer reload; 14: the Nightstand loader (⚙ → Add-ons, a version for each add-on); 15: checks for add-on updates every 24 h and points them out on ⚙; 16: a Nightstand page in the game's Preferences → Extensions, test versions (⚙ → Show test versions); 17: no stray "null" in ⚙ and the Preferences page; 18: floating windows (drag a panel's title bar off the rail); 19: steps aside for the game's toast notices (R134 beeps), code cleanup; 20: renamed Nightstand (was BC Toolkit); 21: the repository's name comes from toolkit.json ("repo"), so a renamed repository needs only a new list
+	const VERSION = 22; // 3: add-on versions in the header, tooltips and ⚙; 4: per-panel minWidth/maxWidth; 5: steps aside for game popups; 6: slimmer ⚙ panel; 7: themes; 8: Royal (blue/gold); 9: says when the dev folder moved; 10: developer tools only when a loader turns them on; 11: Little Black Book; 12: Afterglow in the developer reload; 13: character name in the browser tab, title markers for add-ons, Quiet, Held Remote and Vibe Fix in the developer reload; 14: the Nightstand loader (⚙ → Add-ons, a version for each add-on); 15: checks for add-on updates every 24 h and points them out on ⚙; 16: a Nightstand page in the game's Preferences → Extensions, test versions (⚙ → Show test versions); 17: no stray "null" in ⚙ and the Preferences page; 18: floating windows (drag a panel's title bar off the rail); 19: steps aside for the game's toast notices (R134 beeps), code cleanup; 20: renamed Nightstand (was BC Toolkit); 21: the repository's name comes from toolkit.json ("repo"), so a renamed repository needs only a new list; 22: the repository is BountyHunter9000/nightstand (was bc-toolkit)
 	const prev = window.BCDock;
 	if (prev && prev.version >= VERSION && !window.__bcDockReload) return;
 	delete window.__bcDockReload;
@@ -1419,7 +1419,7 @@
 	// only needs a new list. The name the dock was built with is the starting point and the last resort. Only the name
 	// comes from the list; the account and the hosts are fixed here, so a list can't point anywhere else.
 	const TK_OWNER = "BountyHunter9000";
-	const TK_REPO = "bc-toolkit";
+	const TK_REPO = "nightstand";
 	const TK_REPO_NAME = /^[A-Za-z0-9._-]{1,100}$/;
 	// The repository last named by a list that loaded, or the built-in one
 	const tkRepo = () => (typeof state.tkRepo === "string" && TK_REPO_NAME.test(state.tkRepo) ? state.tkRepo : TK_REPO);

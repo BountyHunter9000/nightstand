@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Quiet for Bondage Club
 // One click on the dock mutes every game notification in this tab (popups, tab title, favicon and the alarm
 // sound, for chat messages, people joining, beeps, disconnects and LARP turns), and another click brings them
@@ -9,7 +9,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_Quiet", fullName: "Nightstand: Quiet", version: "0.2.3", repository: "https://github.com/BountyHunter9000/bc-toolkit/tree/main/bc-quiet" };
+	const MOD_INFO = { name: "NS_Quiet", fullName: "Nightstand: Quiet", version: "0.2.3", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-quiet" };
 	const TAG = "[Quiet]";
 	/** @param {number} m */
 	const KEY = (m) => `Quiet.${m}`;

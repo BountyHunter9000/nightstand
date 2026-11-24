@@ -3,7 +3,7 @@
   "name": "Nightstand",
   "description": "Seven add-ons in one dock: Little Black Book (profiles, chats, room logs), Quick Actions, Vibe Link (real toys through Intiface), Afterglow (orgasm and denial stats), Quiet (mute a tab), Held Remote and Game Fixes (fixes for bugs in the game). Pick which run, and their versions, in the dock's settings or Preferences → Extensions.",
   "author": "BountyHunter9000",
-  "repository": "https://github.com/BountyHunter9000/bc-toolkit",
+  "repository": "https://github.com/BountyHunter9000/nightstand",
   "tags": [
     "enhancements"
   ],
@@ -11,11 +11,11 @@
   "versions": [
     {
       "distribution": "stable",
-      "source": "https://cdn.jsdelivr.net/gh/BountyHunter9000/bc-toolkit@main/loader.js"
+      "source": "https://cdn.jsdelivr.net/gh/BountyHunter9000/nightstand@main/loader.js"
     },
     {
       "distribution": "dev",
-      "source": "https://cdn.jsdelivr.net/gh/BountyHunter9000/bc-toolkit@main/loader-beta.js"
+      "source": "https://cdn.jsdelivr.net/gh/BountyHunter9000/nightstand@main/loader-beta.js"
     }
   ]
 }

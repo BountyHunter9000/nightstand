@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 //
 // Checks every add-on the way Bondage Club checks its own scripts: the game's ESLint config and its strict
 // TypeScript check (checkJs + strict), with the add-ons placed among the game's scripts so they're held to the same

@@ -6,7 +6,7 @@ Small, consent-first add-ons for [Bondage Club](https://www.bondageprojects.com/
 on the edge of the screen. Install them all with **one script**, Nightstand, and turn off any you don't want in
 the dock.
 
-**[Install Nightstand](https://github.com/BountyHunter9000/bc-toolkit/raw/main/nightstand.user.js)** (all add-ons,
+**[Install Nightstand](https://github.com/BountyHunter9000/nightstand/raw/main/nightstand.user.js)** (all add-ons,
 one script; see [Installing](#installing))
 
 | Add-on | What it does |
@@ -26,7 +26,7 @@ themes, opacity and position settings (its ⚙ tab). It also puts the character'
 ## Installing
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) in Chrome or Edge.
-2. Install **[Nightstand](https://github.com/BountyHunter9000/bc-toolkit/raw/main/nightstand.user.js)** and confirm
+2. Install **[Nightstand](https://github.com/BountyHunter9000/nightstand/raw/main/nightstand.user.js)** and confirm
    in Tampermonkey.
 3. Reload the game. Every add-on starts at its latest release; switch off the ones you don't want in the dock's
    ⚙ → **Add-ons**.
@@ -38,7 +38,7 @@ to stay on. Changes apply right away, without reloading the game. Your choices a
 
 **Already have the BC Toolkit script?** It keeps working and updating, and runs the same dock and add-ons, so you don’t have to do anything. To switch, install Nightstand, then delete BC Toolkit in Tampermonkey (running both is harmless but pointless). Your settings carry over.
 
-**Helping test new versions?** Install **[Nightstand (beta)](https://github.com/BountyHunter9000/bc-toolkit/raw/main/nightstand-beta.user.js)**
+**Helping test new versions?** Install **[Nightstand (beta)](https://github.com/BountyHunter9000/nightstand/raw/main/nightstand-beta.user.js)**
 instead of Nightstand (not both). Every add-on then runs its newest test version where there is one, and its release
 otherwise. Or keep Nightstand and switch on **Show test versions** in ⚙ to try just one add-on's test version.
 [More about test versions](bc-dock/README.md#test-versions).
@@ -52,13 +52,13 @@ the same as the script, but only for that page load, so you repeat it after each
   Firefox refuse the paste and ask you to type `allow pasting` first.)
 
   ```js
-  document.head.appendChild(Object.assign(document.createElement('script'),{src:'https://cdn.jsdelivr.net/gh/BountyHunter9000/bc-toolkit@main/loader.js?'+Date.now()}))
+  document.head.appendChild(Object.assign(document.createElement('script'),{src:'https://cdn.jsdelivr.net/gh/BountyHunter9000/nightstand@main/loader.js?'+Date.now()}))
   ```
 
 - **Bookmark:** make a bookmark whose address is the line below, and click it on the game page:
 
   ```
-  javascript:(()=>{var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/gh/BountyHunter9000/bc-toolkit@main/loader.js?'+Date.now();document.head.appendChild(s);})()
+  javascript:(()=>{var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/gh/BountyHunter9000/nightstand@main/loader.js?'+Date.now();document.head.appendChild(s);})()
   ```
 
 Don't use these while the Tampermonkey script is installed; if you do, nothing loads twice.
@@ -90,8 +90,8 @@ The add-ons are plain JavaScript files with no build step. For working on them l
 loader that `@require`s the files from disk instead of from a release:
 
 ```js
-// @require      file:///C:/path/to/bc-toolkit/bc-dock/bc-dock.js
-// @require      file:///C:/path/to/bc-toolkit/bc-quick-actions/quick-actions.js
+// @require      file:///C:/path/to/nightstand/bc-dock/bc-dock.js
+// @require      file:///C:/path/to/nightstand/bc-quick-actions/quick-actions.js
 ```
 
 (In `chrome://extensions` → Tampermonkey → Details, turn on **Allow access to file URLs**.) Add
@@ -148,6 +148,9 @@ so a rename needs no reinstall: rename it on GitHub, then in one commit set the 
 run `node tools/toolkit-list.mjs`. Running docks read the list through the old address (GitHub redirects it), remember
 the new name and load from it; Tampermonkey follows the redirect to the updated scripts. Only names under
 `BountyHunter9000` are accepted.
+
+The repository was called `bc-toolkit` until Nightstand 1.3.4. GitHub sends the old name's addresses here, which older
+docks and scripts rely on, so no repository named `bc-toolkit` should ever be created under this account again.
 
 ## License
 

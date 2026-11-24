@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Held Remote for Bondage Club
 // The game won't let you use a vibrator remote while your arms are tied, even with the Vibe Remote in your hand.
 // With this add-on switched on, a remote someone else left you with works on your own vibrators while you're tied:
@@ -10,7 +10,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_HeldRemote", fullName: "Nightstand: Held Remote", version: "0.1.5", repository: "https://github.com/BountyHunter9000/bc-toolkit/tree/main/bc-held-remote" };
+	const MOD_INFO = { name: "NS_HeldRemote", fullName: "Nightstand: Held Remote", version: "0.1.5", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-held-remote" };
 	const TAG = "[HeldRemote]";
 	/** @param {number} m */
 	const ON_KEY = (m) => `HeldRemote.${m}`;

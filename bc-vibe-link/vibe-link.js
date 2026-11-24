@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/bc-toolkit
+// Copyright (C) 2026 BountyHunter9000. Part of Nightstand: https://github.com/BountyHunter9000/nightstand
 // Vibe Link for Bondage Club
 // Drives real toys (through Intiface Central / buttplug.io) from the vibrators your character wears.
 // Phase 1: five-level mapping, smooth ramps between levels, safety stop, strength cap.
@@ -8,7 +8,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_VibeLink", fullName: "Nightstand: Vibe Link", version: "0.15.2", repository: "https://github.com/BountyHunter9000/bc-toolkit/tree/main/bc-vibe-link" };
+	const MOD_INFO = { name: "NS_VibeLink", fullName: "Nightstand: Vibe Link", version: "0.15.2", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-vibe-link" };
 	const TAG = "[VibeLink]";
 	const SETTINGS_KEY = "VibeLink";
 	const LOCAL_KEY = "VibeLink.local"; // per-browser things: panel position, open/closed, paused
