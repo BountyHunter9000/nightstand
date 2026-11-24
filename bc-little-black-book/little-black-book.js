@@ -2116,7 +2116,7 @@
 	const escapeHtml = (/** @type {unknown} */ s) => String(s).replace(/[&<>"]/g, (c) => HTML_ESC[c]);
 
 	const CSS = `
-#fm-panel{position:fixed;inset:4vh 4vw;z-index:10001;display:flex;flex-direction:column;background:rgb(var(--bcd-bg,27 22 34) / var(--bcd-opacity, 1));color:var(--bcd-text,#eee);
+#fm-panel{width:100%;height:100%;display:flex;flex-direction:column;background:rgb(var(--bcd-bg,27 22 34) / var(--bcd-opacity, 1));color:var(--bcd-text,#eee);
 	border:1px solid var(--bcd-line,#6b4f85);border-radius:8px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 10px 40px #000a}
 #fm-panel *{box-sizing:border-box}
 /* Slim scrollbars in the panel's colours (standard properties, plus WebKit for older browsers) */
@@ -2309,11 +2309,11 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 		function mount() {
 			document.head.append(h("style", { id: "fm-style" }, CSS));
 			if (window.BCDock)
-				dockPanel = BCDock.add({ id: "friend-manager", title: "Black Book", icon: "📓", order: 10, version: MOD_INFO.version, visible: false, onClick: () => {
-					if (panel) close();
-					else open().catch((err) => console.warn(TAG, err));
-				},
-				});
+				dockPanel = BCDock.add({ id: "friend-manager", title: "Black Book", icon: "📓", order: 10, version: MOD_INFO.version, width: 780, minWidth: 500, maxWidth: 1200, visible: false, onToggle: () => {
+					const p = dockPanel;
+					if (p && p.isOpen()) open().catch((err) => console.warn(TAG, err));
+					else close();
+				}});
 			else console.warn(TAG, "bc-dock.js isn't loaded (the Nightstand script brings it); open it with /book");
 			renderTab();
 			refreshBadge().catch((err) => console.warn(TAG, err));
@@ -2393,8 +2393,8 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 		}
 
 		function close() {
-			panel?.remove();
-			panel = null;
+			// Hide the panel but keep it in the DOM (the dock may move it around)
+			if (panel) panel.style.display = "none";
 			dropPreviewCharacter();
 			convView = null;
 			roomView = null;
@@ -2403,24 +2403,29 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 
 		function build() {
 			const stop = (/** @type {Event} */ e) => e.stopPropagation();
-			panel = h("div", { id: "fm-panel", onkeydown: stop, onkeyup: stop, onkeypress: stop, onwheel: stop });
-			panel.addEventListener("keydown", (e) => {
-				if (e.key === "Escape") close();
-			});
-			panel.append(
-				h(
-					"div",
-					{ id: "fm-head" },
-					h("h2", {}, "Little Black Book", h("span", { class: "fm-ver", title: "Little Black Book version" }, ` v${MOD_INFO.version}`)),
-					h("div", { id: "fm-nav" }),
-					h("span", { style: "flex:1" }),
-					h("span", { class: "fm-muted", id: "fm-status" }),
-					h("button", { onclick: () => open(me(), "profiles"), title: "Your own profile, live" }, "👤 My profile"),
-					h("button", { onclick: close, title: "Close (Esc)" }, "✕")
-				),
-				h("div", { id: "fm-body" }, h("div", { id: "fm-side" }, h("div", { id: "fm-tools" }), h("div", { id: "fm-list" })), h("div", { id: "fm-detail" }))
-			);
-			document.body.append(panel);
+			if (!panel) {
+				panel = h("div", { id: "fm-panel", onkeydown: stop, onkeyup: stop, onkeypress: stop, onwheel: stop });
+				panel.addEventListener("keydown", (e) => {
+					if (e.key === "Escape") close();
+				});
+				panel.append(
+					h(
+						"div",
+						{ id: "fm-head" },
+						h("h2", {}, "Little Black Book", h("span", { class: "fm-ver", title: "Little Black Book version" }, ` v${MOD_INFO.version}`)),
+						h("div", { id: "fm-nav" }),
+						h("span", { style: "flex:1" }),
+						h("span", { class: "fm-muted", id: "fm-status" }),
+						h("button", { onclick: () => open(me(), "profiles"), title: "Your own profile, live" }, "👤 My profile")
+					),
+					h("div", { id: "fm-body" }, h("div", { id: "fm-side" }, h("div", { id: "fm-tools" }), h("div", { id: "fm-list" })), h("div", { id: "fm-detail" }))
+				);
+			}
+			panel.style.display = "";
+			// Insert into the dock's body (when floating, the dock moves p.body into the floating window)
+			if (dockPanel?.body) {
+				dockPanel.body.replaceChildren(panel);
+			}
 		}
 
 		/** @param {string} s */
@@ -2555,7 +2560,8 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 							},
 							"★ Favorites"
 						),
-						h("button", { title: "Save what you're wearing right now, restraints included (no locks; crafted ones as the plain item)", onclick: saveMyOutfit }, "Save my current outfit")
+						h("button", { title: "Save what you're wearing right now, restraints included (no locks; crafted ones as the plain item)", onclick: saveMyOutfit }, "Save my current outfit"),
+						h("button", { title: "Paste an outfit code (wardrobe Copy/Paste format) to import it", onclick: importOutfitCode }, "Import outfit code")
 					);
 					break;
 				case "rooms":
@@ -4756,7 +4762,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 								)
 								: h("p", { class: "fm-muted" }, "None."),
 							h("h3", {}, `Outfit (${outfit.length})`),
-							outfit.length ? (access.ok ? outfitTools(snapshotOutfit(d), rec.member !== me(), saveOutfitButton(d, rec)) : outfitLocked(access.why)) : null,
+							outfit.length ? (access.ok ? outfitTools(snapshotOutfit(d), rec.member !== me(), rec.member !== me() ? previewOnMeMerged : undefined, saveOutfitButton(d, rec)) : outfitLocked(access.why)) : null,
 							outfit.length
 								? h(
 									"table",
@@ -4825,7 +4831,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					continue;
 				}
 				if (!g || g.Category !== "Appearance") continue;
-				if (g.AllowCustomize) full.push({ A: a.Name, G: a.Group, C: a.Color });
+				full.push({ A: a.Name, G: a.Group, C: a.Color });
 				if (!g.AllowNone) continue;
 				/** @type {LBBPiece} */
 				const piece = { Name: a.Name, Group: a.Group, Color: a.Color };
@@ -5092,9 +5098,10 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		/**
 		 * @param {LBBSnapshot} snap
 		 * @param {boolean} canWear
+		 * @param {(bundle: any[], family: IAssetFamily) => void} [previewOnMe]
 		 * @param {...any} extra
 		 */
-		function outfitTools(snap, canWear, ...extra) {
+		function outfitTools(snap, canWear, previewOnMe, ...extra) {
 			const result = h("span", { class: "fm-muted", style: "font-size:12px" });
 			const wearAll = canWear
 				? confirmButton(
@@ -5117,6 +5124,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					? copyButton("Copy outfit + restraints code", () => bundleCode([...snap.pieces, ...snap.restraints]), "Clothes, accessories and restraints in one code (no locks; crafted ones as the plain item)")
 					: null,
 				wearAll,
+				previewOnMe ? confirmButton("Preview on me", () => previewOnMe(outfitBundle(snap), snap.family || Player.AssetFamily), { armed: "Previewing…", busy: "Loading…" }) : null,
 				...extra,
 				result
 			);
@@ -5185,22 +5193,98 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		const PREVIEW_ID = "BlackBookPreview";
 		let previewChain = Promise.resolve();
 
+		/** @type {{ hash: string, img: string } | null} */
+		let previewCache = null;
+
+		/** @param {any[]} bundle */
+		function bundleHash(bundle) {
+			return JSON.stringify(bundle.sort((a, b) => (a.Group || a.G || "").localeCompare(b.Group || b.G || "")));
+		}
+
 		/**
 		 * @param {any[]} bundle
 		 * @param {IAssetFamily} family
 		 */
 		function previewCanvas(bundle, family) {
 			const cv = h("canvas", { class: "fm-preview", width: 300, height: 555 });
-			previewChain = previewChain.then(() => drawPreview(cv, bundle, family)).catch((err) => console.warn(TAG, "preview failed", err));
+			// If the bundle hasn't changed, just restore the cached image and skip the draw
+			const hash = bundleHash(bundle);
+			if (previewCache && previewCache.hash === hash) {
+				const img = new Image();
+				img.src = previewCache.img;
+				img.style.width = "100%";
+				img.style.height = "100%";
+				img.style.objectFit = "contain";
+				cv.replaceChildren(img);
+				return cv;
+			}
+			previewChain = previewChain.then(() => drawPreview(cv, bundle, family, hash)).catch((err) => console.warn(TAG, "preview failed", err));
 			return cv;
+		}
+
+		/**
+		 * "Preview on me": merge the player's current appearance with the outfit bundle,
+		 * render to an off-screen canvas, and display alongside the normal preview.
+		 * No in-game changes — only the LBB canvas is affected.
+		 * @param {any[]} bundle
+		 * @param {IAssetFamily} family
+		 */
+		async function previewOnMeMerged(bundle, family) {
+			if (typeof CharacterLoadSimple !== "function" || typeof ServerAppearanceLoadFromBundle !== "function") return;
+			if (!Player?.Appearance) return;
+
+			// Load player's full appearance (face, body, hair, eyes, skin, etc.) as the base
+			const playerFull = typeof ServerAppearanceBundle === "function"
+				? ServerAppearanceBundle(Player.Appearance)
+				: Player.Appearance.map(a => ({ Group: a.Group, Name: a.Name, Color: a.Color }));
+
+			// Overlay the outfit bundle on top (outfit items take priority over player defaults)
+			/** @type {Map<string, any>} */
+			const merged = new Map();
+			for (const item of playerFull) merged.set(item.Group, item);
+			for (const item of bundle) merged.set(item.Group, item);
+			const mergedArr = [...merged.values()];
+
+			// Create a preview character and apply the merged appearance
+			const C = CharacterLoadSimple(PREVIEW_ID);
+			ServerAppearanceLoadFromBundle(C, family || "Female3DCG", /** @type {AppearanceBundle} */ (JSON.parse(JSON.stringify(mergedArr))), undefined);
+			CharacterRefresh(C, false, false);
+
+			// Render to the off-screen canvas
+			const cv = h("canvas", { id: "fm-preview-merged", width: 300, height: 555 });
+			// Insert into DOM so toDataURL works
+			document.body.appendChild(cv);
+
+			const ctx = cv.getContext("2d");
+			if (!ctx) return;
+
+			const upper = typeof CanvasUpperOverflow === "number" ? CanvasUpperOverflow : 700;
+			const sh = 1000 + 80;
+			const sw = Math.round((sh * cv.width) / cv.height);
+
+			// Item images load asynchronously; redraw a few times as they arrive
+			for (let i = 0; i < 10; i++) {
+				await sleep(i ? 300 : 30);
+				if (!cv.isConnected) { document.body.removeChild(cv); return; }
+				CharacterAppearanceBuildCanvas(C);
+				if (!C.Canvas) continue;
+				const sx = Math.round((C.Canvas.width - sw) / 2);
+				const sy = upper - 60;
+				ctx.clearRect(0, 0, cv.width, cv.height);
+				ctx.drawImage(C.Canvas, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+			}
+
+			// Cache the result and keep canvas in DOM for display
+			previewCache = { hash: bundleHash(bundle) + "|me", img: cv.toDataURL() };
 		}
 
 		/**
 		 * @param {HTMLCanvasElement} cv
 		 * @param {any[]} bundle
 		 * @param {IAssetFamily} family
+		 * @param {string} hash
 		 */
-		async function drawPreview(cv, bundle, family) {
+		async function drawPreview(cv, bundle, family, hash) {
 			if (typeof CharacterLoadSimple !== "function" || typeof ServerAppearanceLoadFromBundle !== "function") return;
 			const C = CharacterLoadSimple(PREVIEW_ID);
 			ServerAppearanceLoadFromBundle(C, family || "Female3DCG", /** @type {AppearanceBundle} */ (JSON.parse(JSON.stringify(bundle))), undefined);
@@ -5223,6 +5307,8 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 				ctx.clearRect(0, 0, cv.width, cv.height);
 				ctx.drawImage(C.Canvas, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
 			}
+			// Cache the final frame
+			previewCache = { hash, img: cv.toDataURL() };
 		}
 
 		function dropPreviewCharacter() {
@@ -5324,6 +5410,33 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 			await reload(true);
 		}
 
+		/** Import an outfit code (wardrobe Copy/Paste format) onto the player's character. */
+		async function importOutfitCode() {
+			const code = /** @type {string} */ (prompt("Paste an outfit code (wardrobe Copy/Paste format):"));
+			if (!code || !code.trim()) return;
+			if (typeof LZString?.decompressFromBase64 !== "function") {
+				alert("LZString not available — this requires the game to be loaded.");
+				return;
+			}
+			try {
+				const decompressed = /** @type {string} */ (LZString.decompressFromBase64(code.trim()));
+				const decoded = /** @type {AppearanceBundle} */ (JSON.parse(decompressed));
+				if (!Array.isArray(decoded)) throw new Error("Not an outfit array");
+				if (typeof ServerAppearanceLoadFromBundle !== "function") {
+					alert("Game appearance API not available — open the game first.");
+					return;
+				}
+				// Apply to player character
+				ServerAppearanceLoadFromBundle(Player, Player.AssetFamily || "Female3DCG", decoded, undefined);
+				// Refresh the character canvas
+				if (typeof CharacterRefresh === "function") CharacterRefresh(Player, false, false);
+				if (typeof CharacterAppearanceBuildCanvas === "function") CharacterAppearanceBuildCanvas(Player);
+				alert("Outfit applied! Check your character in the game.");
+			} catch (/** @type {unknown} */ e) {
+				alert("Failed to import: " + String(e));
+			}
+		}
+
 		/**
 		 * @param {number} id
 		 * @param {Record<string, any>} changes
@@ -5386,6 +5499,8 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					h("span", { class: "fm-muted" }, `${o.fromName ? `from ${o.fromName}${o.from != null ? ` (#${o.from})` : ""} · ` : ""}saved ${fmtDate(o.savedAt)}`),
 					h("span", { style: "flex:1" }),
 					o.from != null && o.from !== me() ? h("button", { onclick: () => open(o.from ?? undefined, "profiles") }, "Profile") : null,
+					access.ok ? confirmButton("Preview on me", () => previewOnMeMerged(outfitBundle(o), o.family || Player.AssetFamily), { armed: "Previewing…", busy: "Loading…" }) : null,
+					h("button", { onclick: () => { document.body.removeChild(document.getElementById("fm-preview-merged")); reload(true); } }, "Restore my look"),
 					confirmButton("Delete outfit", () => deleteOutfit(o.id))
 				),
 				h(
@@ -5395,7 +5510,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 						"div",
 						{ style: "flex:1;min-width:0" },
 						h("h3", {}, `Pieces (${o.pieces.length})`),
-						access.ok ? outfitTools(o, true) : outfitLocked(access.why),
+						access.ok ? outfitTools(o, true, previewOnMeMerged) : outfitLocked(access.why),
 						o.pieces.length ? piecesTable(o.pieces, access.ok) : h("p", { class: "fm-muted" }, "No clothing pieces in this outfit."),
 						o.restraints?.length ? h("h3", {}, `Restraints (${o.restraints.length})`) : null,
 						o.restraints?.length ? (access.ok ? restraintTools(o, true) : null) : null,
