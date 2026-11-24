@@ -4762,7 +4762,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 								)
 								: h("p", { class: "fm-muted" }, "None."),
 							h("h3", {}, `Outfit (${outfit.length})`),
-							outfit.length ? (access.ok ? outfitTools(snapshotOutfit(d), rec.member !== me(), rec.member !== me() ? previewOnMeMerged : undefined, saveOutfitButton(d, rec)) : outfitLocked(access.why)) : null,
+							outfit.length ? (access.ok ? outfitTools(snapshotOutfit(d), rec.member !== me(), rec.member !== me() ? /** @type {(bundle: any[], family: IAssetFamily) => void | Promise<void>} */ (() => { void previewOnMeMerged(outfitBundle(/** @type {LBBOutfit} */ (snapshotOutfit(d))), d.AssetFamily); }) : undefined, saveOutfitButton(d, rec)) : outfitLocked(access.why)) : null,
 							outfit.length
 								? h(
 									"table",
@@ -5098,7 +5098,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		/**
 		 * @param {LBBSnapshot} snap
 		 * @param {boolean} canWear
-		 * @param {(bundle: any[], family: IAssetFamily) => void} [previewOnMe]
+		 * @param {(bundle: any[], family: IAssetFamily) => void | Promise<void>} [previewOnMe]
 		 * @param {...any} extra
 		 */
 		function outfitTools(snap, canWear, previewOnMe, ...extra) {
@@ -5124,7 +5124,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					? copyButton("Copy outfit + restraints code", () => bundleCode([...snap.pieces, ...snap.restraints]), "Clothes, accessories and restraints in one code (no locks; crafted ones as the plain item)")
 					: null,
 				wearAll,
-				previewOnMe ? confirmButton("Preview on me", () => previewOnMe(outfitBundle(snap), snap.family || Player.AssetFamily), { armed: "Previewing…", busy: "Loading…" }) : null,
+				previewOnMe ? confirmButton("Preview on me", () => { void previewOnMe(outfitBundle(/** @type {LBBOutfit} */ (snap)), snap.family || Player.AssetFamily); }, { armed: "Previewing…", busy: "Loading…" }) : null,
 				...extra,
 				result
 			);
@@ -5236,7 +5236,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 			// Load player's full appearance (face, body, hair, eyes, skin, etc.) as the base
 			const playerFull = typeof ServerAppearanceBundle === "function"
 				? ServerAppearanceBundle(Player.Appearance)
-				: Player.Appearance.map(a => ({ Group: a.Group, Name: a.Name, Color: a.Color }));
+				: /** @type {Array<{Group: string, Name: string, Color: number[]}>} */ (/** @type {unknown} */ (Player.Appearance)).map(a => ({ Group: a.Group, Name: a.Name, Color: a.Color }));
 
 			// Overlay the outfit bundle on top (outfit items take priority over player defaults)
 			/** @type {Map<string, any>} */
@@ -5500,7 +5500,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					h("span", { style: "flex:1" }),
 					o.from != null && o.from !== me() ? h("button", { onclick: () => open(o.from ?? undefined, "profiles") }, "Profile") : null,
 					access.ok ? confirmButton("Preview on me", () => previewOnMeMerged(outfitBundle(o), o.family || Player.AssetFamily), { armed: "Previewing…", busy: "Loading…" }) : null,
-					h("button", { onclick: () => { document.body.removeChild(document.getElementById("fm-preview-merged")); reload(true); } }, "Restore my look"),
+					h("button", { onclick: () => { const merged = document.getElementById("fm-preview-merged"); if (merged) document.body.removeChild(merged); void reload(true); } }, "Restore my look"),
 					confirmButton("Delete outfit", () => deleteOutfit(o.id))
 				),
 				h(
@@ -5510,7 +5510,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 						"div",
 						{ style: "flex:1;min-width:0" },
 						h("h3", {}, `Pieces (${o.pieces.length})`),
-						access.ok ? outfitTools(o, true, previewOnMeMerged) : outfitLocked(access.why),
+						access.ok ? outfitTools(o, true, /** @type {(bundle: any[], family: IAssetFamily) => void | Promise<void>} */ (() => { void previewOnMeMerged(outfitBundle(o), o.family || Player.AssetFamily); })) : outfitLocked(access.why),
 						o.pieces.length ? piecesTable(o.pieces, access.ok) : h("p", { class: "fm-muted" }, "No clothing pieces in this outfit."),
 						o.restraints?.length ? h("h3", {}, `Restraints (${o.restraints.length})`) : null,
 						o.restraints?.length ? (access.ok ? restraintTools(o, true) : null) : null,
