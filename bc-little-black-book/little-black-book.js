@@ -11,7 +11,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_BlackBook", fullName: "Nightstand: Little Black Book", version: "1.3.2", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-little-black-book" };
+	const MOD_INFO = { name: "NS_BlackBook", fullName: "Nightstand: Little Black Book", version: "1.3.3", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-little-black-book" };
 	const TAG = "[BlackBook]";
 	// Server events that carry a full character payload (the others are partial deltas)
 	const FULL_SYNC_EVENTS = new Set(["ChatRoomSync", "ChatRoomSyncMemberJoin", "ChatRoomSyncCharacter", "ChatRoomSyncSingle"]);
@@ -2118,6 +2118,8 @@
 	const CSS = `
 #fm-panel{position:fixed;inset:4vh 4vw;z-index:10001;display:flex;flex-direction:column;background:rgb(var(--bcd-bg,27 22 34) / var(--bcd-opacity, 1));color:var(--bcd-text,#eee);
 	border:1px solid var(--bcd-line,#6b4f85);border-radius:8px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 10px 40px #000a}
+/* Inside a dock window (dock 23+): the dock draws the frame, background and title bar */
+#fm-panel.in-dock{position:static;inset:auto;z-index:auto;flex:1;min-height:0;background:none;border:0;border-radius:0;box-shadow:none}
 #fm-panel *{box-sizing:border-box}
 /* Slim scrollbars in the panel's colours (standard properties, plus WebKit for older browsers) */
 #fm-panel *{scrollbar-width:thin;scrollbar-color:var(--bcd-line,#6b4f85) rgb(var(--bcd-bg,27 22 34))}
@@ -2309,11 +2311,19 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 		function mount() {
 			document.head.append(h("style", { id: "fm-style" }, CSS));
 			if (window.BCDock)
-				dockPanel = BCDock.add({ id: "friend-manager", title: "Black Book", icon: "📓", order: 10, version: MOD_INFO.version, visible: false, onClick: () => {
-					if (panel) close();
-					else open().catch((err) => console.warn(TAG, err));
-				},
-				});
+				dockPanel = BCDock.add(
+					dockSizes()
+						? // A dock window like the other add-ons': beside the rail or floating, resizable at its edges
+						{ id: "friend-manager", title: "Black Book", icon: "📓", order: 10, version: MOD_INFO.version, visible: false, width: 960, minWidth: 560, maxWidth: 2400, height: 680, minHeight: 360, onToggle: (on) => {
+							if (on && !panel) open().catch((err) => console.warn(TAG, err));
+							else if (!on) teardown();
+						} }
+						: // An older dock can't size a window: the book keeps its own
+						{ id: "friend-manager", title: "Black Book", icon: "📓", order: 10, version: MOD_INFO.version, visible: false, onClick: () => {
+							if (panel) close();
+							else open().catch((err) => console.warn(TAG, err));
+						} }
+				);
 			else console.warn(TAG, "bc-dock.js isn't loaded (the Nightstand script brings it); open it with /book");
 			renderTab();
 			refreshBadge().catch((err) => console.warn(TAG, err));
@@ -2328,7 +2338,7 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 
 		function renderTab() {
 			dockPanel?.setBadge(unreadTotal || null);
-			dockPanel?.setSummary(panel ? "open" : unreadTotal ? `${unreadTotal} unread` : "");
+			dockPanel?.setSummary(panel && !inDock() ? "open" : unreadTotal ? `${unreadTotal} unread` : "");
 		}
 
 		// Shown once logged in, and kept while the panel is open since it also closes it
@@ -2383,6 +2393,7 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 				}
 			}
 			if (!panel) build();
+			if (inDock() && !dockPanel?.isOpen()) dockPanel?.open();
 			convView = null;
 			roomView = null;
 			renderNav();
@@ -2392,7 +2403,17 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 			await reload(true);
 		}
 
+		// Dock 23 and later give the book a window it fills (moved, floated and resized by the dock)
+		const dockSizes = () => !!window.BCDock && Number(window.BCDock.version) >= 23;
+		const inDock = () => dockSizes() && !!dockPanel?.body;
+
 		function close() {
+			// In the dock, closing its window tears the book down (onToggle)
+			if (inDock() && dockPanel?.isOpen()) dockPanel.close();
+			teardown();
+		}
+
+		function teardown() {
 			panel?.remove();
 			panel = null;
 			dropPreviewCharacter();
@@ -2403,7 +2424,8 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 
 		function build() {
 			const stop = (/** @type {Event} */ e) => e.stopPropagation();
-			panel = h("div", { id: "fm-panel", onkeydown: stop, onkeyup: stop, onkeypress: stop, onwheel: stop });
+			const docked = inDock();
+			panel = h("div", { id: "fm-panel", class: docked ? "in-dock" : null, onkeydown: stop, onkeyup: stop, onkeypress: stop, onwheel: stop });
 			panel.addEventListener("keydown", (e) => {
 				if (e.key === "Escape") close();
 			});
@@ -2411,16 +2433,18 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 				h(
 					"div",
 					{ id: "fm-head" },
-					h("h2", {}, "Little Black Book", h("span", { class: "fm-ver", title: "Little Black Book version" }, ` v${MOD_INFO.version}`)),
+					// The dock's title bar already says what and which version
+					docked ? null : h("h2", {}, "Little Black Book", h("span", { class: "fm-ver", title: "Little Black Book version" }, ` v${MOD_INFO.version}`)),
 					h("div", { id: "fm-nav" }),
 					h("span", { style: "flex:1" }),
 					h("span", { class: "fm-muted", id: "fm-status" }),
 					h("button", { onclick: () => open(me(), "profiles"), title: "Your own profile, live" }, "👤 My profile"),
-					h("button", { onclick: close, title: "Close (Esc)" }, "✕")
+					docked ? null : h("button", { onclick: close, title: "Close (Esc)" }, "✕")
 				),
 				h("div", { id: "fm-body" }, h("div", { id: "fm-side" }, h("div", { id: "fm-tools" }), h("div", { id: "fm-list" })), h("div", { id: "fm-detail" }))
 			);
-			document.body.append(panel);
+			if (docked) dockPanel?.body?.replaceChildren(panel);
+			else document.body.append(panel);
 		}
 
 		/** @param {string} s */
@@ -5235,6 +5259,9 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		async function drawPreview(cv, bundle, family) {
 			if (typeof CharacterLoadSimple !== "function" || typeof ServerAppearanceLoadFromBundle !== "function") return;
 			const C = CharacterLoadSimple(PREVIEW_ID);
+			// The preview character is reused, and the game only lets a character's body (skin, hair, eyes…) change when it
+			// allows full wardrobe access: without it, every preview kept the body drawn first
+			C.OnlineSharedSettings = /** @type {CharacterOnlineSharedSettings} */ ({ ...(C.OnlineSharedSettings ?? {}), AllowFullWardrobeAccess: true });
 			ServerAppearanceLoadFromBundle(C, family || "Female3DCG", /** @type {AppearanceBundle} */ (JSON.parse(JSON.stringify(bundle))), undefined);
 			CharacterRefresh(C, false, false);
 			const ctx = cv.getContext("2d");

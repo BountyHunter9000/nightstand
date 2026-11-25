@@ -164,6 +164,9 @@ Per account, saved with that account's data.
   read in the game too, desktop notifications.
 - **Opening Little Black Book**: the 📓 tab, `/book`, `/chat`. The last
   remaining way to open the panel can't be switched off.
+- **The window** (with Nightstand's dock 23 or later) is a dock panel like the other add-ons': it opens beside
+  the rail, its title bar drags it off into a window of its own, and its edges (and a floating window's corner)
+  resize it. The dock remembers where it was and how big. With an older dock it keeps its own full-screen window.
 
 ## Rules
 
