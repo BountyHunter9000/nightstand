@@ -11,7 +11,7 @@
 (async () => {
 
 	// ModSDK: the full name groups the add-ons as "Nightstand: …" in mod lists, with a link to the add-on's folder
-	const MOD_INFO = { name: "NS_BlackBook", fullName: "Nightstand: Little Black Book", version: "1.3.0", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-little-black-book" };
+	const MOD_INFO = { name: "NS_BlackBook", fullName: "Nightstand: Little Black Book", version: "1.3.2", repository: "https://github.com/BountyHunter9000/nightstand/tree/main/bc-little-black-book" };
 	const TAG = "[BlackBook]";
 	// Server events that carry a full character payload (the others are partial deltas)
 	const FULL_SYNC_EVENTS = new Set(["ChatRoomSync", "ChatRoomSyncMemberJoin", "ChatRoomSyncCharacter", "ChatRoomSyncSingle"]);
@@ -2116,7 +2116,7 @@
 	const escapeHtml = (/** @type {unknown} */ s) => String(s).replace(/[&<>"]/g, (c) => HTML_ESC[c]);
 
 	const CSS = `
-#fm-panel{width:100%;height:100%;display:flex;flex-direction:column;background:rgb(var(--bcd-bg,27 22 34) / var(--bcd-opacity, 1));color:var(--bcd-text,#eee);
+#fm-panel{position:fixed;inset:4vh 4vw;z-index:10001;display:flex;flex-direction:column;background:rgb(var(--bcd-bg,27 22 34) / var(--bcd-opacity, 1));color:var(--bcd-text,#eee);
 	border:1px solid var(--bcd-line,#6b4f85);border-radius:8px;font:14px/1.4 system-ui,sans-serif;box-shadow:0 10px 40px #000a}
 #fm-panel *{box-sizing:border-box}
 /* Slim scrollbars in the panel's colours (standard properties, plus WebKit for older browsers) */
@@ -2309,11 +2309,11 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 		function mount() {
 			document.head.append(h("style", { id: "fm-style" }, CSS));
 			if (window.BCDock)
-				dockPanel = BCDock.add({ id: "friend-manager", title: "Black Book", icon: "📓", order: 10, version: MOD_INFO.version, width: 780, minWidth: 500, maxWidth: 1200, visible: false, onToggle: () => {
-					const p = dockPanel;
-					if (p && p.isOpen()) open().catch((err) => console.warn(TAG, err));
-					else close();
-				}});
+				dockPanel = BCDock.add({ id: "friend-manager", title: "Black Book", icon: "📓", order: 10, version: MOD_INFO.version, visible: false, onClick: () => {
+					if (panel) close();
+					else open().catch((err) => console.warn(TAG, err));
+				},
+				});
 			else console.warn(TAG, "bc-dock.js isn't loaded (the Nightstand script brings it); open it with /book");
 			renderTab();
 			refreshBadge().catch((err) => console.warn(TAG, err));
@@ -2393,8 +2393,8 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 		}
 
 		function close() {
-			// Hide the panel but keep it in the DOM (the dock may move it around)
-			if (panel) panel.style.display = "none";
+			panel?.remove();
+			panel = null;
 			dropPreviewCharacter();
 			convView = null;
 			roomView = null;
@@ -2403,29 +2403,24 @@ mark{background:#c2185b;color:#fff;border-radius:2px}
 
 		function build() {
 			const stop = (/** @type {Event} */ e) => e.stopPropagation();
-			if (!panel) {
-				panel = h("div", { id: "fm-panel", onkeydown: stop, onkeyup: stop, onkeypress: stop, onwheel: stop });
-				panel.addEventListener("keydown", (e) => {
-					if (e.key === "Escape") close();
-				});
-				panel.append(
-					h(
-						"div",
-						{ id: "fm-head" },
-						h("h2", {}, "Little Black Book", h("span", { class: "fm-ver", title: "Little Black Book version" }, ` v${MOD_INFO.version}`)),
-						h("div", { id: "fm-nav" }),
-						h("span", { style: "flex:1" }),
-						h("span", { class: "fm-muted", id: "fm-status" }),
-						h("button", { onclick: () => open(me(), "profiles"), title: "Your own profile, live" }, "👤 My profile")
-					),
-					h("div", { id: "fm-body" }, h("div", { id: "fm-side" }, h("div", { id: "fm-tools" }), h("div", { id: "fm-list" })), h("div", { id: "fm-detail" }))
-				);
-			}
-			panel.style.display = "";
-			// Insert into the dock's body (when floating, the dock moves p.body into the floating window)
-			if (dockPanel?.body) {
-				dockPanel.body.replaceChildren(panel);
-			}
+			panel = h("div", { id: "fm-panel", onkeydown: stop, onkeyup: stop, onkeypress: stop, onwheel: stop });
+			panel.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") close();
+			});
+			panel.append(
+				h(
+					"div",
+					{ id: "fm-head" },
+					h("h2", {}, "Little Black Book", h("span", { class: "fm-ver", title: "Little Black Book version" }, ` v${MOD_INFO.version}`)),
+					h("div", { id: "fm-nav" }),
+					h("span", { style: "flex:1" }),
+					h("span", { class: "fm-muted", id: "fm-status" }),
+					h("button", { onclick: () => open(me(), "profiles"), title: "Your own profile, live" }, "👤 My profile"),
+					h("button", { onclick: close, title: "Close (Esc)" }, "✕")
+				),
+				h("div", { id: "fm-body" }, h("div", { id: "fm-side" }, h("div", { id: "fm-tools" }), h("div", { id: "fm-list" })), h("div", { id: "fm-detail" }))
+			);
+			document.body.append(panel);
 		}
 
 		/** @param {string} s */
@@ -4718,6 +4713,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					// Their outfit can be copied/saved/worn only with their consent (see outfitAccess); yours always
 					const access = outfitAccess(rec.member, d);
 					const canWearHere = rec.member !== me() && access.ok;
+					const pv = previewWithOnMe(d.Appearance, fam, canWearHere);
 					const craftCell = (/** @type {any} */ a) => {
 						const craft = a.Craft || a.Property?.Craft;
 						if (!craft) return "";
@@ -4762,7 +4758,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 								)
 								: h("p", { class: "fm-muted" }, "None."),
 							h("h3", {}, `Outfit (${outfit.length})`),
-							outfit.length ? (access.ok ? outfitTools(snapshotOutfit(d), rec.member !== me(), rec.member !== me() ? /** @type {(bundle: any[], family: IAssetFamily) => void | Promise<void>} */ (() => { void previewOnMeMerged(outfitBundle(/** @type {LBBOutfit} */ (snapshotOutfit(d))), d.AssetFamily); }) : undefined, saveOutfitButton(d, rec)) : outfitLocked(access.why)) : null,
+							outfit.length ? (access.ok ? outfitTools(snapshotOutfit(d), rec.member !== me(), saveOutfitButton(d, rec), pv.btn) : outfitLocked(access.why)) : null,
 							outfit.length
 								? h(
 									"table",
@@ -4783,7 +4779,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 								)
 								: h("p", { class: "fm-muted" }, "None.")
 						),
-						previewCanvas(d.Appearance, fam)
+						pv.cv
 					);
 				}
 				case "Crafts": {
@@ -4831,7 +4827,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					continue;
 				}
 				if (!g || g.Category !== "Appearance") continue;
-				full.push({ A: a.Name, G: a.Group, C: a.Color });
+				if (g.AllowCustomize) full.push({ A: a.Name, G: a.Group, C: a.Color });
 				if (!g.AllowNone) continue;
 				/** @type {LBBPiece} */
 				const piece = { Name: a.Name, Group: a.Group, Color: a.Color };
@@ -5098,10 +5094,9 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		/**
 		 * @param {LBBSnapshot} snap
 		 * @param {boolean} canWear
-		 * @param {(bundle: any[], family: IAssetFamily) => void | Promise<void>} [previewOnMe]
 		 * @param {...any} extra
 		 */
-		function outfitTools(snap, canWear, previewOnMe, ...extra) {
+		function outfitTools(snap, canWear, ...extra) {
 			const result = h("span", { class: "fm-muted", style: "font-size:12px" });
 			const wearAll = canWear
 				? confirmButton(
@@ -5124,7 +5119,6 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					? copyButton("Copy outfit + restraints code", () => bundleCode([...snap.pieces, ...snap.restraints]), "Clothes, accessories and restraints in one code (no locks; crafted ones as the plain item)")
 					: null,
 				wearAll,
-				previewOnMe ? confirmButton("Preview on me", () => { void previewOnMe(outfitBundle(/** @type {LBBOutfit} */ (snap)), snap.family || Player.AssetFamily); }, { armed: "Previewing…", busy: "Loading…" }) : null,
 				...extra,
 				result
 			);
@@ -5193,12 +5187,34 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		const PREVIEW_ID = "BlackBookPreview";
 		let previewChain = Promise.resolve();
 
-		/** @type {{ hash: string, img: string } | null} */
-		let previewCache = null;
-
+		// "Preview on me": the same preview spot, drawn as your own body (skin, hair, eyes and the other parts that can't be
+		// taken off) wearing the outfit's clothes and restraints. Only the picture changes; nothing is put on you.
 		/** @param {any[]} bundle */
-		function bundleHash(bundle) {
-			return JSON.stringify(bundle.sort((a, b) => (a.Group || a.G || "").localeCompare(b.Group || b.G || "")));
+		function onMeBundle(bundle) {
+			const fam = Player.AssetFamily || "Female3DCG";
+			const mine = typeof ServerAppearanceBundle === "function" ? ServerAppearanceBundle(Player.Appearance) : [];
+			return [...mine.filter((a) => isBodyGroup(fam, a.Group)), ...bundle.filter((/** @type {any} */ a) => a && a.Group && !isBodyGroup(fam, a.Group))];
+		}
+		/**
+		 * The preview, and a button that switches it between the outfit as saved and the outfit on you
+		 * @param {any[]} bundle
+		 * @param {IAssetFamily} family
+		 * @param {boolean} offer show the button (only when the outfit may be copied, and it's someone else's look)
+		 * @returns {{ cv: HTMLCanvasElement, btn: HTMLElement | null }}
+		 */
+		function previewWithOnMe(bundle, family, offer) {
+			let cv = previewCanvas(bundle, family);
+			if (!offer || (family || "Female3DCG") !== (Player.AssetFamily || "Female3DCG")) return { cv, btn: null };
+			let onMe = false;
+			const btn = h("button", { title: "Show the outfit on your own body in this preview. Nothing is put on you." }, "👤 Preview on me");
+			btn.addEventListener("click", () => {
+				onMe = !onMe;
+				const next = onMe ? previewCanvas(onMeBundle(bundle), family) : previewCanvas(bundle, family);
+				cv.replaceWith(next);
+				cv = next;
+				btn.textContent = onMe ? "👤 Back to the original" : "👤 Preview on me";
+			});
+			return { cv, btn };
 		}
 
 		/**
@@ -5207,90 +5223,18 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		 */
 		function previewCanvas(bundle, family) {
 			const cv = h("canvas", { class: "fm-preview", width: 300, height: 555 });
-			// If the bundle hasn't changed, just restore the cached image and skip the draw
-			const hash = bundleHash(bundle);
-			if (previewCache && previewCache.hash === hash) {
-				const img = new Image();
-				img.src = previewCache.img;
-				img.style.width = "100%";
-				img.style.height = "100%";
-				img.style.objectFit = "contain";
-				cv.replaceChildren(img);
-				return cv;
-			}
-			previewChain = previewChain.then(() => drawPreview(cv, bundle, family, hash)).catch((err) => console.warn(TAG, "preview failed", err));
+			previewChain = previewChain.then(() => drawPreview(cv, bundle, family)).catch((err) => console.warn(TAG, "preview failed", err));
 			return cv;
-		}
-
-		/**
-		 * "Preview on me": merge the player's current appearance with the outfit bundle,
-		 * render to an off-screen canvas, and display alongside the normal preview.
-		 * No in-game changes — only the LBB canvas is affected.
-		 * @param {any[]} bundle
-		 * @param {IAssetFamily} family
-		 */
-		async function previewOnMeMerged(bundle, family) {
-			if (typeof CharacterLoadSimple !== "function" || typeof ServerAppearanceLoadFromBundle !== "function") return;
-			if (!Player?.Appearance) return;
-
-			// Load player's full appearance (face, body, hair, eyes, skin, etc.) as the base
-			const playerFull = typeof ServerAppearanceBundle === "function"
-				? ServerAppearanceBundle(Player.Appearance)
-				: /** @type {Array<{Group: string, Name: string, Color: number[]}>} */ (/** @type {unknown} */ (Player.Appearance)).map(a => ({ Group: a.Group, Name: a.Name, Color: a.Color }));
-
-			// Overlay the outfit bundle on top (outfit items take priority over player defaults)
-			/** @type {Map<string, any>} */
-			const merged = new Map();
-			for (const item of playerFull) merged.set(item.Group, item);
-			for (const item of bundle) merged.set(item.Group, item);
-			const mergedArr = [...merged.values()];
-
-			// Create a preview character and apply the merged appearance
-			const C = CharacterLoadSimple(PREVIEW_ID);
-			// Allow full wardrobe access so appearance groups (BodyStyle, Eyes, Hair, etc.) aren't blocked by validation
-			if (C.OnlineSharedSettings) C.OnlineSharedSettings.AllowFullWardrobeAccess = true;
-			ServerAppearanceLoadFromBundle(C, family || "Female3DCG", /** @type {AppearanceBundle} */ (JSON.parse(JSON.stringify(mergedArr))), undefined);
-			CharacterRefresh(C, false, false);
-
-			// Render to the off-screen canvas
-			const cv = h("canvas", { id: "fm-preview-merged", width: 300, height: 555 });
-			// Insert into DOM so toDataURL works
-			document.body.appendChild(cv);
-
-			const ctx = cv.getContext("2d");
-			if (!ctx) return;
-
-			const upper = typeof CanvasUpperOverflow === "number" ? CanvasUpperOverflow : 700;
-			const sh = 1000 + 80;
-			const sw = Math.round((sh * cv.width) / cv.height);
-
-			// Item images load asynchronously; redraw a few times as they arrive
-			for (let i = 0; i < 10; i++) {
-				await sleep(i ? 300 : 30);
-				if (!cv.isConnected) { document.body.removeChild(cv); return; }
-				CharacterAppearanceBuildCanvas(C);
-				if (!C.Canvas) continue;
-				const sx = Math.round((C.Canvas.width - sw) / 2);
-				const sy = upper - 60;
-				ctx.clearRect(0, 0, cv.width, cv.height);
-				ctx.drawImage(C.Canvas, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
-			}
-
-			// Cache the result and keep canvas in DOM for display
-			previewCache = { hash: bundleHash(bundle) + "|me", img: cv.toDataURL() };
 		}
 
 		/**
 		 * @param {HTMLCanvasElement} cv
 		 * @param {any[]} bundle
 		 * @param {IAssetFamily} family
-		 * @param {string} hash
 		 */
-		async function drawPreview(cv, bundle, family, hash) {
+		async function drawPreview(cv, bundle, family) {
 			if (typeof CharacterLoadSimple !== "function" || typeof ServerAppearanceLoadFromBundle !== "function") return;
 			const C = CharacterLoadSimple(PREVIEW_ID);
-			// Allow full wardrobe access so appearance groups (BodyStyle, Eyes, Hair, etc.) aren't blocked by validation
-			if (C.OnlineSharedSettings) C.OnlineSharedSettings.AllowFullWardrobeAccess = true;
 			ServerAppearanceLoadFromBundle(C, family || "Female3DCG", /** @type {AppearanceBundle} */ (JSON.parse(JSON.stringify(bundle))), undefined);
 			CharacterRefresh(C, false, false);
 			const ctx = cv.getContext("2d");
@@ -5311,8 +5255,6 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 				ctx.clearRect(0, 0, cv.width, cv.height);
 				ctx.drawImage(C.Canvas, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
 			}
-			// Cache the final frame
-			previewCache = { hash, img: cv.toDataURL() };
 		}
 
 		function dropPreviewCharacter() {
@@ -5403,17 +5345,6 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 			);
 		}
 
-		async function saveMyOutfit() {
-			const who = typeof CharacterNickname === "function" ? CharacterNickname(Player) : Player.Name;
-			const rec = await saveOutfit(
-				snapshotOutfit({ AssetFamily: Player.AssetFamily, Appearance: typeof ServerAppearanceBundle === "function" ? ServerAppearanceBundle(Player.Appearance) : [] }),
-				`My outfit · ${new Date().toLocaleDateString()}`,
-				{ member: me(), name: who }
-			);
-			outfitSel = rec.id;
-			await reload(true);
-		}
-
 		/** Import an outfit code (wardrobe Copy/Paste format) onto the player's character. */
 		async function importOutfitCode() {
 			const code = /** @type {string} */ (prompt("Paste an outfit code (wardrobe Copy/Paste format):"));
@@ -5439,6 +5370,17 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 			} catch (/** @type {unknown} */ e) {
 				alert("Failed to import: " + String(e));
 			}
+		}
+
+		async function saveMyOutfit() {
+			const who = typeof CharacterNickname === "function" ? CharacterNickname(Player) : Player.Name;
+			const rec = await saveOutfit(
+				snapshotOutfit({ AssetFamily: Player.AssetFamily, Appearance: typeof ServerAppearanceBundle === "function" ? ServerAppearanceBundle(Player.Appearance) : [] }),
+				`My outfit · ${new Date().toLocaleDateString()}`,
+				{ member: me(), name: who }
+			);
+			outfitSel = rec.id;
+			await reload(true);
 		}
 
 		/**
@@ -5489,6 +5431,7 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 			const o = savedOutfits.find((x) => x.id === outfitSel);
 			if (!o) return el.replaceChildren(h("p", { class: "fm-muted" }, "Pick a saved outfit on the left. Save outfits from a profile's Appearance tab, or save your own."));
 			const access = outfitAccess(o.from, o.from != null ? records.get(o.from)?.data : undefined);
+			const pv = previewWithOnMe(outfitBundle(o), o.family || Player.AssetFamily, access.ok);
 			const nameEl = h("input", { type: "text", value: o.name, style: "font-size:16px;font-weight:600;min-width:240px" });
 			nameEl.addEventListener("change", () => {
 				const v = nameEl.value.trim();
@@ -5503,8 +5446,6 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 					h("span", { class: "fm-muted" }, `${o.fromName ? `from ${o.fromName}${o.from != null ? ` (#${o.from})` : ""} · ` : ""}saved ${fmtDate(o.savedAt)}`),
 					h("span", { style: "flex:1" }),
 					o.from != null && o.from !== me() ? h("button", { onclick: () => open(o.from ?? undefined, "profiles") }, "Profile") : null,
-					access.ok ? confirmButton("Preview on me", () => previewOnMeMerged(outfitBundle(o), o.family || Player.AssetFamily), { armed: "Previewing…", busy: "Loading…" }) : null,
-					h("button", { onclick: () => { const merged = document.getElementById("fm-preview-merged"); if (merged) document.body.removeChild(merged); void reload(true); } }, "Restore my look"),
 					confirmButton("Delete outfit", () => deleteOutfit(o.id))
 				),
 				h(
@@ -5514,13 +5455,13 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 						"div",
 						{ style: "flex:1;min-width:0" },
 						h("h3", {}, `Pieces (${o.pieces.length})`),
-						access.ok ? outfitTools(o, true, /** @type {(bundle: any[], family: IAssetFamily) => void | Promise<void>} */ (() => { void previewOnMeMerged(outfitBundle(o), o.family || Player.AssetFamily); })) : outfitLocked(access.why),
+						access.ok ? outfitTools(o, true, pv.btn) : outfitLocked(access.why),
 						o.pieces.length ? piecesTable(o.pieces, access.ok) : h("p", { class: "fm-muted" }, "No clothing pieces in this outfit."),
 						o.restraints?.length ? h("h3", {}, `Restraints (${o.restraints.length})`) : null,
 						o.restraints?.length ? (access.ok ? restraintTools(o, true) : null) : null,
 						o.restraints?.length ? restraintsTable(o.restraints, access.ok) : null
 					),
-					previewCanvas(outfitBundle(o), o.family || Player.AssetFamily)
+					pv.cv
 				)
 			);
 		}

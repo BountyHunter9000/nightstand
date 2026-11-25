@@ -126,6 +126,10 @@ Saved outfits keep restraints too: a profile with restraints offers **Save outfi
 and **Save without restraints**, and **Save my current outfit** includes yours. The outfit tools
 then have **Copy outfit + restraints code** next to the outfit and full-look codes.
 
+**👤 Preview on me** (a profile's Appearance tab, and saved outfits, when you may copy the outfit) redraws the
+preview as your own body (skin, hair, eyes) wearing that outfit. Only the picture changes; nothing is put on you. Click
+again for the original. **Import outfit code** (above the saved outfits) puts a wardrobe code on you.
+
 **Favorite profiles**: ☆ on anyone, friend or not; favorites sort first and the filter has a
 **★ Favorites** view.
 
