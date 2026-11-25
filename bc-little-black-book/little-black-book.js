@@ -5247,6 +5247,8 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 
 			// Create a preview character and apply the merged appearance
 			const C = CharacterLoadSimple(PREVIEW_ID);
+			// Allow full wardrobe access so appearance groups (BodyStyle, Eyes, Hair, etc.) aren't blocked by validation
+			if (C.OnlineSharedSettings) C.OnlineSharedSettings.AllowFullWardrobeAccess = true;
 			ServerAppearanceLoadFromBundle(C, family || "Female3DCG", /** @type {AppearanceBundle} */ (JSON.parse(JSON.stringify(mergedArr))), undefined);
 			CharacterRefresh(C, false, false);
 
@@ -5287,6 +5289,8 @@ header{border-bottom:1px solid #444;margin-bottom:1em;padding-bottom:.5em;white-
 		async function drawPreview(cv, bundle, family, hash) {
 			if (typeof CharacterLoadSimple !== "function" || typeof ServerAppearanceLoadFromBundle !== "function") return;
 			const C = CharacterLoadSimple(PREVIEW_ID);
+			// Allow full wardrobe access so appearance groups (BodyStyle, Eyes, Hair, etc.) aren't blocked by validation
+			if (C.OnlineSharedSettings) C.OnlineSharedSettings.AllowFullWardrobeAccess = true;
 			ServerAppearanceLoadFromBundle(C, family || "Female3DCG", /** @type {AppearanceBundle} */ (JSON.parse(JSON.stringify(bundle))), undefined);
 			CharacterRefresh(C, false, false);
 			const ctx = cv.getContext("2d");
