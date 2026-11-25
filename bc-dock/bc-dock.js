@@ -9,7 +9,7 @@
 "use strict";
 
 (() => {
-	const VERSION = 22; // 3: add-on versions in the header, tooltips and ⚙; 4: per-panel minWidth/maxWidth; 5: steps aside for game popups; 6: slimmer ⚙ panel; 7: themes; 8: Royal (blue/gold); 9: says when the dev folder moved; 10: developer tools only when a loader turns them on; 11: Little Black Book; 12: Afterglow in the developer reload; 13: character name in the browser tab, title markers for add-ons, Quiet, Held Remote and Vibe Fix in the developer reload; 14: the Nightstand loader (⚙ → Add-ons, a version for each add-on); 15: checks for add-on updates every 24 h and points them out on ⚙; 16: a Nightstand page in the game's Preferences → Extensions, test versions (⚙ → Show test versions); 17: no stray "null" in ⚙ and the Preferences page; 18: floating windows (drag a panel's title bar off the rail); 19: steps aside for the game's toast notices (R134 beeps), code cleanup; 20: renamed Nightstand (was BC Toolkit); 21: the repository's name comes from toolkit.json ("repo"), so a renamed repository needs only a new list; 22: the repository is BountyHunter9000/nightstand (was bc-toolkit)
+	const VERSION = 23; // 3: add-on versions in the header, tooltips and ⚙; 4: per-panel minWidth/maxWidth; 5: steps aside for game popups; 6: slimmer ⚙ panel; 7: themes; 8: Royal (blue/gold); 9: says when the dev folder moved; 10: developer tools only when a loader turns them on; 11: Little Black Book; 12: Afterglow in the developer reload; 13: character name in the browser tab, title markers for add-ons, Quiet, Held Remote and Vibe Fix in the developer reload; 14: the Nightstand loader (⚙ → Add-ons, a version for each add-on); 15: checks for add-on updates every 24 h and points them out on ⚙; 16: a Nightstand page in the game's Preferences → Extensions, test versions (⚙ → Show test versions); 17: no stray "null" in ⚙ and the Preferences page; 18: floating windows (drag a panel's title bar off the rail); 19: steps aside for the game's toast notices (R134 beeps), code cleanup; 20: renamed Nightstand (was BC Toolkit); 21: the repository's name comes from toolkit.json ("repo"), so a renamed repository needs only a new list; 22: the repository is BountyHunter9000/nightstand (was bc-toolkit); 23: panels with a height (Little Black Book) fill a window of that height, and their bottom edge (and a floating window's corner) resizes it
 	const prev = window.BCDock;
 	if (prev && prev.version >= VERSION && !window.__bcDockReload) return;
 	delete window.__bcDockReload;
@@ -44,9 +44,9 @@
 	 * @typedef {{ preset: string, bg?: string, accent?: string, glow?: string }} DockTheme
 	 * @typedef {{ id: string, name: string, icon: string, about: string, path: string, global: string, prefix: string, versions: string[], beta: string[] }} TkAddon
 	 * @typedef {{ format: "BCToolkit", addons: TkAddon[], repo?: string }} TkList the add-on list; repo: the repository the files are in, when it says
-	 * @typedef {{ side: string, y: number | null, x: number | null, opacity: number, widths: Record<string, number>, active: string | null, float: Record<string, DockFloat>, theme: DockTheme, titleName?: boolean, lockDock?: boolean, devWatch?: boolean, tk?: Record<string, string>, tkBeta?: boolean, tkList?: TkList & { at?: number }, tkRepo?: string }} DockState
+	 * @typedef {{ side: string, y: number | null, x: number | null, opacity: number, widths: Record<string, number>, heights: Record<string, number>, active: string | null, float: Record<string, DockFloat>, theme: DockTheme, titleName?: boolean, lockDock?: boolean, devWatch?: boolean, tk?: Record<string, string>, tkBeta?: boolean, tkList?: TkList & { at?: number }, tkRepo?: string }} DockState
 	 * @typedef {{ spec: BCDockPanelSpec & { order: number }, tab: HTMLDivElement, body: HTMLElement, actions: HTMLElement, sum: string, visible: boolean }} DockPanelBase what the flyout needs (⚙ is one too)
-	 * @typedef {{ title: HTMLSpanElement, ver: HTMLSpanElement, sum: HTMLSpanElement, body: HTMLDivElement, sizer: HTMLDivElement, dockBtn: HTMLButtonElement, head: HTMLDivElement, el: HTMLDivElement }} DockWin
+	 * @typedef {{ title: HTMLSpanElement, ver: HTMLSpanElement, sum: HTMLSpanElement, body: HTMLDivElement, sizer: HTMLDivElement, vsizer: HTMLDivElement, corner: HTMLDivElement, dockBtn: HTMLButtonElement, head: HTMLDivElement, el: HTMLDivElement }} DockWin
 	 * @typedef {DockPanelBase & { badge: string | null, dot: HTMLSpanElement, badgeEl: HTMLSpanElement, icon: HTMLSpanElement, win: DockWin | null, setTitle(t: string): void, setSummary(t: string | null | undefined): void, setBadge(b: string | number | null | undefined): void, setDot(d: string | null | undefined): void, setVisible(v: boolean): void }} DockPanel
 	 * @typedef {{ spec: BCDockPanelSpec, visible?: boolean, badge?: string | null, summary?: string, dotClass?: string, actions?: HTMLElement, body?: HTMLElement }} DockAdopted a panel handed over by an older dock
 	 */
@@ -56,10 +56,10 @@
 
 	// ---------- saved state (this browser only) ----------
 	/** @type {DockState} */
-	let state = { side: "left", y: null, x: null, opacity: 0.94, widths: {}, active: null, float: {}, theme: { preset: "amethyst" } };
+	let state = { side: "left", y: null, x: null, opacity: 0.94, widths: {}, heights: {}, active: null, float: {}, theme: { preset: "amethyst" } };
 	try {
 		const s = /** @type {Partial<DockState> | null} */ (JSON.parse(localStorage.getItem(STORE) || "null"));
-		if (s && typeof s === "object") state = { ...state, ...s, widths: { ...(s.widths || {}) } };
+		if (s && typeof s === "object") state = { ...state, ...s, widths: { ...(s.widths || {}) }, heights: { ...(s.heights || {}) } };
 		// Floating windows: panel id -> { x, y, open }
 		/** @type {Record<string, DockFloat>} */
 		const fl = {};
@@ -264,6 +264,14 @@
 .bcd-body{padding:6px 10px 10px}
 .bcd-sizer{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize}
 :is(#bcd-fly,.bcd-float).left .bcd-sizer,:is(#bcd-fly,.bcd-float).top .bcd-sizer,:is(#bcd-fly,.bcd-float).bottom .bcd-sizer{right:-4px}:is(#bcd-fly,.bcd-float).right .bcd-sizer{left:-4px}
+.bcd-vsizer,.bcd-corner{position:absolute;display:none}
+.bcd-vsizer{left:8px;right:8px;bottom:-4px;height:8px;cursor:ns-resize}
+#bcd-fly.bottom .bcd-vsizer{bottom:auto;top:-4px}
+.bcd-corner{right:-4px;bottom:-4px;width:16px;height:16px;cursor:nwse-resize}
+:is(#bcd-fly,.bcd-float).fill{max-height:calc(100vh - 8px)}
+:is(#bcd-fly,.bcd-float).fill .bcd-vsizer,.bcd-float.fill .bcd-corner{display:block}
+:is(#bcd-fly,.bcd-float).fill .bcd-bodywrap{overflow:hidden;display:flex;flex-direction:column}
+:is(#bcd-fly,.bcd-float).fill .bcd-bodywrap>.bcd-body{flex:1;min-height:0;padding:0;display:flex;flex-direction:column}
 .bcd-cfg{font-size:12px}
 .bcd-cfg .row{display:flex;align-items:center;gap:4px;margin:3px 0;flex-wrap:wrap}
 .bcd-cfg .sides{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin:3px 0}
@@ -310,12 +318,14 @@
 	const flyActions = el("span", { class: "bcd-actions" });
 	const flyBodyWrap = el("div", { class: "bcd-bodywrap" });
 	const sizer = el("div", { class: "bcd-sizer", title: "Drag to change the width" });
+	const vsizer = el("div", { class: "bcd-vsizer", title: "Drag to change the height" });
 	const fly = el(
 		"div",
 		{ id: "bcd-fly", class: "closed" },
 		el("div", { class: "bcd-head" }, flyTitle, flyVer, flySum, flyActions, el("button", { class: "bcd-ico", title: "Close", onclick: () => setActive(null) }, "✕")),
 		flyBodyWrap,
-		sizer
+		sizer,
+		vsizer
 	);
 	// Keep typing and wheel scrolling inside the dock away from the game
 	for (const node of [rail, fly]) for (const ev of ["keydown", "keyup", "keypress", "wheel"]) node.addEventListener(ev, (e) => e.stopPropagation());
@@ -703,6 +713,29 @@
 		return Math.round(Math.max(min, Math.min(max, w)));
 	}
 
+	// Panels with a height (spec.height) are windows of a set size that their add-on fills; the rest fit their content
+	const MIN_H = 240;
+	/**
+	 * @param {DockPanelBase | undefined} p
+	 * @param {number} h
+	 */
+	function clampH(p, h) {
+		const min = p?.spec.minHeight ?? MIN_H;
+		const max = Math.max(min, Math.min(innerHeight - 16, p?.spec.maxHeight ?? Infinity));
+		return Math.round(Math.max(min, Math.min(max, h)));
+	}
+	/** @param {DockPanelBase | undefined} p */
+	const sized = (p) => typeof p?.spec.height === "number" && p.spec.height > 0;
+	/**
+	 * Sets a window's height (or lets it fit its content)
+	 * @param {HTMLElement} node
+	 * @param {DockPanelBase | undefined} p
+	 */
+	function fitHeight(node, p) {
+		node.classList.toggle("fill", sized(p));
+		node.style.height = p && sized(p) ? `${clampH(p, state.heights[p.spec.id] || p.spec.height || MIN_H)}px` : "";
+	}
+
 	function place() {
 		// With the Nightstand loader, ⚙ stays reachable even before any add-on shows a tab (its menus switch them on)
 		const any = [...panels.values()].some((q) => q.visible) || (tk.started && tkOn());
@@ -726,6 +759,7 @@
 		const w = clampW(p, (active && state.widths[active]) || p?.spec.width || DEFAULT_W);
 		fly.className = `${state.side}${w < 250 ? " narrow" : ""}`;
 		fly.style.width = `${w}px`;
+		fitHeight(fly, p);
 		const rail2 = rail.getBoundingClientRect();
 		const tr = p?.tab.getBoundingClientRect();
 		const fr = fly.getBoundingClientRect();
@@ -764,6 +798,26 @@
 		const id = active;
 		const move = (/** @type {PointerEvent} */ ev) => {
 			state.widths[id] = clampW(panelOf(id), startW + dir * (ev.clientX - startX));
+			place();
+		};
+		const up = () => {
+			removeEventListener("pointermove", move);
+			removeEventListener("pointerup", up);
+			save();
+		};
+		addEventListener("pointermove", move);
+		addEventListener("pointerup", up);
+	});
+
+	vsizer.addEventListener("pointerdown", (e) => {
+		if (e.button !== 0 || !active) return;
+		e.preventDefault();
+		const startY = e.clientY;
+		const startH = fly.offsetHeight;
+		const dir = state.side === "bottom" ? -1 : 1;
+		const id = active;
+		const move = (/** @type {PointerEvent} */ ev) => {
+			state.heights[id] = clampH(panelOf(id), startH + dir * (ev.clientY - startY));
 			place();
 		};
 		const up = () => {
@@ -843,10 +897,12 @@
 			sum: el("span", { class: "bcd-sum" }),
 			body: el("div", { class: "bcd-bodywrap" }),
 			sizer: el("div", { class: "bcd-sizer", title: "Drag to change the width" }),
+			vsizer: el("div", { class: "bcd-vsizer", title: "Drag to change the height" }),
+			corner: el("div", { class: "bcd-corner", title: "Drag to change the size" }),
 			dockBtn: el("button", { class: "bcd-ico", title: "Put it back on the rail", onclick: () => dockPanel(id) }, "⇤"),
 		});
 		w.head = el("div", { class: "bcd-head", title: "Drag to move" }, w.title, w.ver, w.sum, w.dockBtn, el("button", { class: "bcd-ico", title: "Close (its tab opens it again)", onclick: () => closeFloat(id) }, "✕"));
-		w.el = el("div", { class: "bcd-float", "data-id": id }, w.head, w.body, w.sizer);
+		w.el = el("div", { class: "bcd-float", "data-id": id }, w.head, w.body, w.sizer, w.vsizer, w.corner);
 		for (const ev of ["keydown", "keyup", "keypress", "wheel"]) w.el.addEventListener(ev, (e) => e.stopPropagation());
 		w.el.addEventListener("pointerdown", () => raise(w.el), true);
 		onDrag(w.head, {
@@ -858,6 +914,23 @@
 			start: (sx) => ({ w: w.el.offsetWidth, sx }),
 			move: (c, ev) => {
 				state.widths[id] = clampW(p, c.w + ev.clientX - c.sx);
+				placeFloat(p);
+			},
+			end: () => save(),
+		});
+		onDrag(w.vsizer, {
+			start: (_sx, sy) => ({ h: w.el.offsetHeight, sy }),
+			move: (c, ev) => {
+				state.heights[id] = clampH(p, c.h + ev.clientY - c.sy);
+				placeFloat(p);
+			},
+			end: () => save(),
+		});
+		onDrag(w.corner, {
+			start: (sx, sy) => ({ w: w.el.offsetWidth, h: w.el.offsetHeight, sx, sy }),
+			move: (c, ev) => {
+				state.widths[id] = clampW(p, c.w + ev.clientX - c.sx);
+				state.heights[id] = clampH(p, c.h + ev.clientY - c.sy);
 				placeFloat(p);
 			},
 			end: () => save(),
@@ -886,6 +959,7 @@
 		const w = clampW(p, state.widths[p.spec.id] || p.spec.width || DEFAULT_W);
 		p.win.el.className = `bcd-float${w < 250 ? " narrow" : ""}`;
 		p.win.el.style.width = `${w}px`;
+		fitHeight(p.win.el, p);
 		f.x = Math.max(0, Math.min(innerWidth - Math.min(w, innerWidth), f.x));
 		f.y = Math.max(0, Math.min(innerHeight - 40, f.y));
 		p.win.el.style.left = `${f.x}px`;

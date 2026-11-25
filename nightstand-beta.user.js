@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Nightstand (beta)
 // @namespace    nightstand
-// @version      1.3.4
+// @version      1.3.6
 // @description  Nightstand with test versions switched on: each add-on starts at Beta (its newest test version, or the release once that's newer). For testers; install this or Nightstand, not both
 // @author       BountyHunter9000
 // @license      GPL-3.0-or-later
@@ -17,7 +17,7 @@
 // @match        https://www.bondageprojects.com/*
 // @run-at       document-end
 // @grant        none
-// @require      https://cdn.jsdelivr.net/gh/BountyHunter9000/nightstand@tk-v1.3.4/bc-dock/bc-dock.js
+// @require      https://cdn.jsdelivr.net/gh/BountyHunter9000/nightstand@tk-v1.3.6/bc-dock/bc-dock.js
 // @updateURL    https://github.com/BountyHunter9000/nightstand/raw/main/nightstand-beta.user.js
 // @downloadURL  https://github.com/BountyHunter9000/nightstand/raw/main/nightstand-beta.user.js
 // ==/UserScript==

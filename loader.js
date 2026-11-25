@@ -9,7 +9,7 @@
 (() => {
 	"use strict";
 	const BETA = false; // loader-beta.js: true (test versions switched on, the dock's newest test version)
-	const FALLBACK = "tk-v1.3.4";
+	const FALLBACK = "tk-v1.3.6";
 	// The repository: this name to start with, then whatever toolkit.json names ("repo"), so a renamed repository only
 	// needs a new list (GitHub redirects the old name's raw files). Only the name comes from the list.
 	const OWNER = "BountyHunter9000";

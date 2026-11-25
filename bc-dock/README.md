@@ -23,7 +23,7 @@ settings, storage and logic.
 ▐⚙ │                                        ⚙ = dock settings
 ```
 
-- **📓** opens Little Black Book's own big window, as its bubble used to. Its badge is the unread count.
+- **📓** opens Little Black Book in a large panel (from dock 23; with an older dock, its own big window). Its badge is the unread count.
 - **🔔** is Quiet's button: one click mutes the game's notifications in that tab (🔕), another turns them back on.
 - **🎚** switches Held Remote on or off.
 - **⚡ / 〰 / ✨** slide out Quick Actions / Vibe Link / Afterglow. The panel header shows the title, a one-line
@@ -41,13 +41,13 @@ settings, storage and logic.
   **Glow** (charts and highlights). Every other shade is mixed from those three. Changes apply as you
   drag. A background too light for the add-ons' light text is darkened automatically. Friend
   Manager's window, Vibe Link and Quick Actions all follow the theme.
-- Drag a panel's outer edge to change its width (kept per panel).
+- Drag a panel's outer edge to change its width (kept per panel). Little Black Book's panel also has a height: drag its bottom edge, or a floating window's bottom-right corner, to resize it.
 - **Floating windows:** drag a panel's title bar away from the rail and it gets a window of its own, anywhere on
   the screen. A floating window stays open next to the docked panel and other floating ones. Its tab opens and
   closes it, and **⇤** in its title bar puts it back on the rail. Which panels float, where they are and whether
   they're open are remembered. In ⚙ → **Panel windows**, **Keep panels on the rail** puts them all back and stops
   title bars from being dragged away, and **Put all back on the rail** puts them back and forgets where they were
-  (so does **Reset position**). Little Black Book has its own window, and ⚙ always stays on the rail.
+  (so does **Reset position**). ⚙ always stays on the rail.
 - Tabs hide when their add-on has nothing to show (Quick Actions outside chat rooms, everything when
   logged out). A panel hidden that way comes back open when its tab returns.
 - Position, side, opacity, theme, widths, floating windows and the open panel are kept in this browser's `localStorage`
@@ -186,8 +186,9 @@ const panel = BCDock.add({
 	order: 30,                // lower = higher up
 	version: "0.2.4",         // shown after the title, in the tab's tooltip and in ⚙ → Add-ons
 	width: 320,               // starting width; minWidth / maxWidth limit dragging (default 220 / 70% of the window)
+	height: undefined,        // dock 23: a window of this height that the body fills (resizable; minHeight / maxHeight)
 	alignStart: false,        // true: open level with the start of the rail rather than beside its tab
-	onClick: undefined,       // tab runs this instead of opening a panel (Little Black Book)
+	onClick: undefined,       // tab runs this instead of opening a panel (Little Black Book before dock 23)
 	onToggle: (open) => {},   // the panel was opened or closed
 });
 panel.body                  // element to render the panel's content into

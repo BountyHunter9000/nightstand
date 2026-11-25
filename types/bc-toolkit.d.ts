@@ -15,6 +15,10 @@ interface BCDockPanelSpec {
 	width?: number;
 	minWidth?: number;
 	maxWidth?: number;
+	/** A window of this height (resizable) that the panel's body fills, instead of fitting its content (dock 23) */
+	height?: number;
+	minHeight?: number;
+	maxHeight?: number;
 	/** Open lined up with the start of the rail instead of the tab */
 	alignStart?: boolean;
 	visible?: boolean;
